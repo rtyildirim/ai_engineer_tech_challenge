@@ -20,6 +20,12 @@ npm run build
 cd ../../..
 
 # Deploy with CDK
+echo "Bootstrapping CDK..."
+cdk bootstrap
+
+echo "Bootstrap complete!"
+
+# Deploy with CDK
 echo "Deploying with CDK..."
 cdk deploy --all --require-approval never
 
