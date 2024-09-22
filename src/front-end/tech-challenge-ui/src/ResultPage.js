@@ -75,7 +75,7 @@ function ResultPage() {
       <header className="ResultPage-header">
         <h2>Response</h2>
         <p><strong>Previous Question:</strong> {previousQuestion}</p>
-        <p><strong>Filter:</strong> {focus}</p>
+        <p><strong>Focus:</strong> {focus}</p>
         <p><strong>Response:</strong> {previousAnswer}</p>
 
         {/* Input for follow-up question */}

@@ -31,7 +31,7 @@ def get_validation_error(data):
     if "focus" in data:
         if not isinstance(data["focus"], str):
             return "The 'focus' field must be a string if provided."
-        if data["focus"].lower() not in VALID_FOCUS_VALUES:
+        if data["focus"] != "" and data["focus"].lower() not in VALID_FOCUS_VALUES:
             return "Invalid 'focus' value. Must be one of: {}".format(", ".join(VALID_FOCUS_VALUES))
 
     if "attachment" in data:
@@ -177,6 +177,8 @@ def lambda_handler(event, context):
     
     question = data['question']
     focus = data.get('focus', '')
+    if focus == "":
+        focus = None
 
     attchment_text = None
     if 'attachment' in data:
