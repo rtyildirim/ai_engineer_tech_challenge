@@ -1,6 +1,7 @@
 import boto3
 import json
 import os
+import io
 from botocore.exceptions import ClientError
 
 
@@ -45,12 +46,7 @@ def get_validation_error(data):
 
     return None
 
-import boto3
-import io
-
-s3_client = boto3.client('s3')
-
-def read_file_from_s3(bucket_name, file_key):
+def read_text_file_from_s3(bucket_name, file_key):
     response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
     file_content = response['Body'].read()
     
@@ -60,11 +56,11 @@ def read_file_from_s3(bucket_name, file_key):
         raise ValueError("Unsupported file type. Please provide a .txt file.")
 
 
-def construct_prompt(question, attchment_text, focus=None):
+def construct_prompt(question, attachment_text, focus=None):
 
     base_prompt = f"Answer the following question: '{question}'"
 
-    if attchment_text:
+    if attachment_text:
         base_prompt += f" Content of file attached is below "
 
     if focus:
@@ -81,8 +77,8 @@ def construct_prompt(question, attchment_text, focus=None):
         if focus_instruction:
             base_prompt += f" \n{focus_instruction}"
 
-        if attchment_text:
-            base_prompt += f" \n Attached file content: {attchment_text}"
+    if attachment_text:
+        base_prompt += f" \n Attached file content: {attachment_text}"
 
     return base_prompt
 
@@ -104,7 +100,7 @@ def send_prompt(question, prompt, focus, temperature=0.5, max_tokens=512):
    
     model_id = os.environ.get('BEDROCK_MODEL_ID')
 
-    print(prompt)
+    print("Inferring model for prompt: " + prompt)
 
     native_request = {
         "anthropic_version": "bedrock-2023-05-31",
@@ -167,7 +163,7 @@ def lambda_handler(event, context):
     attchment_text = None
     if 'attachment' in data:
         try:
-            attchment_text =  read_file_from_s3(BUCKET_NAME, data['attachment'])
+            attchment_text =  read_text_file_from_s3(BUCKET_NAME, data['attachment'])
         except Exception as e:
             return invalid_request_response(str(e))
 

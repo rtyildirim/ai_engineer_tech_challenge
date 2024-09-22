@@ -4,10 +4,14 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { CorsRule } from 'aws-cdk-lib/aws-s3';
 
 
-export class AiEngineerTechChallengeStack extends cdk.Stack {
+export class AiEngineerTechChallengeAPIStack extends cdk.Stack {
+
+  public readonly ssmParamName = 'ai-tech-challenge-api-url';
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -57,7 +61,6 @@ export class AiEngineerTechChallengeStack extends cdk.Stack {
 
     inferenceLambda.addToRolePolicy(bedrockPolicy);
 
-
     // Create Lambda function to handle /files endpoint
     const fileHandlerLambda = new lambda.Function(this, 'FileHandlerLambda', {
       runtime: lambda.Runtime.PYTHON_3_9,
@@ -83,10 +86,19 @@ export class AiEngineerTechChallengeStack extends cdk.Stack {
     const fileResource = api.root.addResource('file');
     fileResource.addMethod('POST', new apigateway.LambdaIntegration(fileHandlerLambda));
 
-    // Output API Gateway url
+    // Output the API URL
     new cdk.CfnOutput(this, 'APIGatewayURL', {
       value: api.url,
+      exportName: 'APIGatewayURL',
+    });
+
+    // Store the API Gateway URL in SSM Parameter Store
+    new ssm.StringParameter(this, 'ApiGatewayUrlParameter', {
+      parameterName: this.ssmParamName,
+      stringValue: api.url,
+      simpleName: true,
     });
 
   }
+
 }
