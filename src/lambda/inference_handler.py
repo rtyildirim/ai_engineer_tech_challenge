@@ -5,6 +5,9 @@ from botocore.exceptions import ClientError
 
 
 VALID_FOCUS_VALUES = {"web", "academic", "math", "writing", "video", "social"}
+BUCKET_NAME = os.environ['BUCKET_NAME']
+
+s3_client = boto3.client('s3')
 
 
 def invalid_request_response(message):
@@ -42,9 +45,27 @@ def get_validation_error(data):
 
     return None
 
-def construct_prompt(question, focus=None):
+import boto3
+import io
+
+s3_client = boto3.client('s3')
+
+def read_file_from_s3(bucket_name, file_key):
+    response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+    file_content = response['Body'].read()
+    
+    if file_key.lower().endswith('.txt'):
+        return file_content.decode('utf-8')
+    else:
+        raise ValueError("Unsupported file type. Please provide a .txt file.")
+
+
+def construct_prompt(question, attchment_text, focus=None):
 
     base_prompt = f"Answer the following question: '{question}'"
+
+    if attchment_text:
+        base_prompt += f" Content of file attached is below "
 
     if focus:
         focus_options = {
@@ -59,6 +80,9 @@ def construct_prompt(question, focus=None):
         focus_instruction = focus_options.get(focus.lower(), "")
         if focus_instruction:
             base_prompt += f" \n{focus_instruction}"
+
+        if attchment_text:
+            base_prompt += f" \n Attached file content: {attchment_text}"
 
     return base_prompt
 
@@ -139,9 +163,15 @@ def lambda_handler(event, context):
     
     question = data['question']
     focus = data.get('focus', '')
-    attchment = data.get('attachment', '')
 
-    prompt = construct_prompt(question, focus)
+    attchment_text = None
+    if 'attachment' in data:
+        try:
+            attchment_text =  read_file_from_s3(BUCKET_NAME, data['attachment'])
+        except Exception as e:
+            return invalid_request_response(str(e))
+
+    prompt = construct_prompt(question, attchment_text, focus)
 
     if "previousQuestion" in data and "previousAnswer" in data:
         previous_question = data["previousQuestion"]
