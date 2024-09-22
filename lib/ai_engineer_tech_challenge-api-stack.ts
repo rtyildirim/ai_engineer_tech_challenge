@@ -76,14 +76,30 @@ export class AiEngineerTechChallengeAPIStack extends cdk.Stack {
     fileUploadBucket.grantReadWrite(fileHandlerLambda);
 
     //  API Gateway to manage API request-respansoes
-    const api = new apigateway.RestApi(this, 'EngineeringChallengeAPI', {});
+    const api = new apigateway.RestApi(this, 'EngineeringChallengeAPI', {
+      
+    });
 
     // Define /infer POST endpoint to handle requests
-    const inferResource = api.root.addResource('infer');
+    const inferResource = api.root.addResource('infer',
+      {
+        defaultCorsPreflightOptions: {
+          allowOrigins: apigateway.Cors.ALL_ORIGINS,
+          allowMethods: apigateway.Cors.ALL_METHODS,
+          allowHeaders: ['*'],
+        },
+      }
+    );
     inferResource.addMethod('POST', new apigateway.LambdaIntegration(inferenceLambda));
 
     // Define /file POST endpoint to handle requests
-    const fileResource = api.root.addResource('file');
+    const fileResource = api.root.addResource('file', {
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: ['*'],
+      },
+    });
     fileResource.addMethod('POST', new apigateway.LambdaIntegration(fileHandlerLambda));
 
     // Output the API URL

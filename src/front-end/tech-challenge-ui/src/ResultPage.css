@@ -1,0 +1,71 @@
+.ResultPage {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f0f0f0; /* Match background color */
+}
+
+.ResultPage-header {
+  background-color: #282c34; /* Dark background */
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+}
+
+h2 {
+  font-size: 2rem;
+  color: #61dafb; /* Title color */
+  margin-bottom: 20px;
+}
+
+.ResultPage p {
+  font-size: 1.2rem;
+  color: #ffffff; /* White text for responses */
+  margin: 10px 0;
+}
+
+.follow-up-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.follow-up-input {
+  width: 100%;
+  max-width: 500px;
+  height: 50px;
+  padding: 10px;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ask-button,
+.back-button {
+  background-color: #61dafb;
+  color: white;
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.ask-button:hover,
+.back-button:hover {
+  background-color: #21a1f1; /* Darker blue on hover */
+}
+
+.back-button {
+  margin-top: 10px; /* Space above back button */
+}

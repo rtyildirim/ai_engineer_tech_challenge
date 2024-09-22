@@ -14,7 +14,13 @@ s3_client = boto3.client('s3')
 def invalid_request_response(message):
     return {
         "statusCode": 400,
-        "body": json.dumps({"error": message})
+        "body": json.dumps({"error": message}),
+        "headers": {
+            "Content-Type": "application/json",
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT'
+        }
     }
 
 def get_validation_error(data):
@@ -93,7 +99,7 @@ def get_follow_up_prompt(question, previous_question, previous_answer, focus = N
         f"Please provide an updated response."
     )
 
-    return construct_prompt(prompt)
+    return construct_prompt(prompt,None, None)
 
 
 def send_prompt(question, prompt, focus, temperature=0.5, max_tokens=512):
@@ -126,7 +132,13 @@ def send_prompt(question, prompt, focus, temperature=0.5, max_tokens=512):
     except (ClientError, Exception) as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f"Error: {str(e)}")
+            'body': json.dumps(f"Error: {str(e)}"),
+            'headers': {
+                "Content-Type": "application/json",
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT'
+            }
         }
     
     model_response = json.loads(response["body"].read())
@@ -136,10 +148,16 @@ def send_prompt(question, prompt, focus, temperature=0.5, max_tokens=512):
     return {
         'statusCode': 200,
         'body': json.dumps({
-        'question': question,
-        'focus': focus,
-        'response_text': response_text
-        })
+            'question': question,
+            'focus': focus,
+            'response_text': response_text
+        }),
+        'headers': {
+            "Content-Type": "application/json",
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT'
+        }
     }
 
 def lambda_handler(event, context):
