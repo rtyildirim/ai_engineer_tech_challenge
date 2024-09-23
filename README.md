@@ -17,7 +17,7 @@ The front end is developed in React and deployed to AWS CloudFront as a single-p
 
 The backend API exposes the following endpoints:
 
-- `/file` (POST): Uploads files to S3 for inference (optional). This endpoint returns a pre-signed S3 URL that the front end can use for uploads.
+- `/file` (POST): Uploads files to S3 for inference (optional). Returns the given uuid file name to be used in inference
 - `/infer` (POST): Performs model inference and returns a response. The request body includes one required field and four optional fields:
   - `question` (Required)
   - `focus` (Optional)

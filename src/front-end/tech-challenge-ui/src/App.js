@@ -75,21 +75,16 @@ function App() {
     if (file) {
       const reader = new FileReader();
 
-      const randomFile = generateRandomFileName(6); // Generate random filename
-      setRandomFile(randomFile);
+      const formData = new FormData();
+      formData.append('file', file);
 
       reader.onload = async (e) => {
         const fileContent = e.target.result;
 
-        const requestBody = {
-          fileName: randomFile,
-          fileType: "text/plain",
-        };
-
         try {
           const response = await fetch(`${apiUrl}/file`, {
             method: 'POST',
-            body: JSON.stringify(requestBody),
+            body: fileContent,
           });
 
           if (!response.ok) {
@@ -97,26 +92,11 @@ function App() {
           }
 
           const data = await response.json();
-          console.log('Response data:', data);
 
-          // Extract the upload URL from the response
-          const uploadUrl = data.uploadUrl;
+          const randomFile = data.fileName;
+          setRandomFile(randomFile);
 
-          // Call the upload URL with PUT request
-          const putResponse = await fetch(uploadUrl, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-            body: fileContent,
-          });
-
-          if (!putResponse.ok) {
-            throw new Error('Error uploading file content');
-          }
-
-          const putData = await putResponse.json();
-          console.log('File upload response:', putData);
+          console.log('File upload response:', randomFile);
         } catch (error) {
           console.error('Error uploading file:', error);
         }

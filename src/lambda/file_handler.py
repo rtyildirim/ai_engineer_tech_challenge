@@ -1,53 +1,63 @@
 import json
+import base64
 import boto3
+import uuid
 import os
 
-s3_client = boto3.client('s3')
+s3 = boto3.client('s3')
 BUCKET_NAME = os.environ['BUCKET_NAME']  # Bucket name is set as environment variable
 
 def lambda_handler(event, context):
     try:
-        # Parse the request body
-        body = json.loads(event['body'])
-        file_name = body['fileName']
-        file_type = body.get('fileType', 'text/plain')
+        # Check if request is base64 encoded (needed for binary uploads)
+        is_base64_encoded = event.get("isBase64Encoded", False)
         
-        # Define S3 presigned URL parameters
-        presigned_url = s3_client.generate_presigned_url(
-            'put_object',
-            Params={
-                'Bucket': BUCKET_NAME,
-                'Key': file_name,
-                'ContentType': file_type
-            },
-            ExpiresIn=3600  # URL valid for 1 hour
+        # Read the binary data from the request body
+        body = event['body']
+        if is_base64_encoded:
+            file_content = base64.b64decode(body)  # Decode base64 to binary
+        else:
+            file_content = body.encode('utf-8')  # Assume it's text
+        
+        # Generate a unique filename
+        file_name = f"{str(uuid.uuid4())}.txt"
+        
+        # Upload the file to S3
+        s3.put_object(
+            Bucket=BUCKET_NAME,
+            Key=file_name,
+            Body=file_content
         )
         
-        # Return the presigned URL in response
-        return {
-            'statusCode': 200,
-            'body': json.dumps({
-                'uploadUrl': presigned_url,
-                'message': 'Presigned URL generated successfully'
+        # Prepare success response
+        response = {
+            "statusCode": 200,
+            "body": json.dumps({
+                "message": "File uploaded successfully",
+                "fileName": file_name
             }),
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT'
+                'Access-Control-Allow-Methods': 'HEAD,POST,GET,PUT,DELETE'
             }
         }
+        
     except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({
-                'message': 'Error generating presigned URL',
-                'error': str(e)
+        # Handle errors
+        response = {
+            "statusCode": 500,
+            "body": json.dumps({
+                "message": "Error uploading file",
+                "error": str(e)
             }),
             'headers': {
                 'Content-Type': 'application/json',
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT'
+                'Access-Control-Allow-Methods': 'HEAD,POST,GET,PUT,DELETE'
             }
         }
+    
+    return response

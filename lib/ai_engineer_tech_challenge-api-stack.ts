@@ -15,7 +15,7 @@ export class AiEngineerTechChallengeAPIStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const bedrockModelId = 'anthropic.claude-3-haiku-20240307-v1:0'; //'meta.llama3-1-405b-instruct-v1:0';
+    const bedrockModelId = 'anthropic.claude-3-haiku-20240307-v1:0';
 
 
     // Define the CORS rules for the S3 bucket
@@ -23,13 +23,18 @@ export class AiEngineerTechChallengeAPIStack extends cdk.Stack {
       allowedMethods: [
         cdk.aws_s3.HttpMethods.PUT, // Allow PUT requests (for uploading files)
         cdk.aws_s3.HttpMethods.GET, // Allow GET requests (for reading files)
+        cdk.aws_s3.HttpMethods.POST,
+        cdk.aws_s3.HttpMethods.DELETE,
+        cdk.aws_s3.HttpMethods.HEAD,
       ],
       allowedOrigins: ['*'],  // Allow requests from any origin
       allowedHeaders: ['*'],  // Allow all headers
+      maxAge: 3600,
+      exposedHeaders: ['ETag'],
     };
 
     // Create S3 bucket to upload files
-    const fileUploadBucket = new s3.Bucket(this, 'FileUploadBucket', {
+    const fileUploadBucket = new s3.Bucket(this, 'UploadBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       cors: [corsRule],
